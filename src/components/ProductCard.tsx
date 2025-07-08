@@ -8,6 +8,7 @@ interface ProductCardProps {
   reason?: string;
   nutritionalMatch?: string;
   rank?: number;
+  onAddToCart?: (product: Product) => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ 
@@ -15,10 +16,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
   score, 
   reason, 
   nutritionalMatch, 
-  rank 
+  rank, 
+  onAddToCart
 }) => {
-  const handleAddToCart = () => {
-    window.open(product.walmartUrl, '_blank');
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onAddToCart) {
+      onAddToCart(product);
+    } else {
+      window.open(product.walmartUrl, '_blank');
+    }
   };
 
   return (
@@ -80,20 +87,22 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-2 mb-4 text-sm">
-          <div className="text-center p-2 bg-gray-50 rounded">
-            <div className="font-semibold">{product.nutrition.calories}</div>
-            <div className="text-gray-600">Calories</div>
+        {product.nutrition && (
+          <div className="grid grid-cols-3 gap-2 mb-4 text-sm">
+            <div className="text-center p-2 bg-gray-50 rounded">
+              <div className="font-semibold">{product.nutrition.calories}</div>
+              <div className="text-gray-600">Calories</div>
+            </div>
+            <div className="text-center p-2 bg-gray-50 rounded">
+              <div className="font-semibold">{product.nutrition.protein}g</div>
+              <div className="text-gray-600">Protein</div>
+            </div>
+            <div className="text-center p-2 bg-gray-50 rounded">
+              <div className="font-semibold">{product.nutrition.carbs}g</div>
+              <div className="text-gray-600">Carbs</div>
+            </div>
           </div>
-          <div className="text-center p-2 bg-gray-50 rounded">
-            <div className="font-semibold">{product.nutrition.protein}g</div>
-            <div className="text-gray-600">Protein</div>
-          </div>
-          <div className="text-center p-2 bg-gray-50 rounded">
-            <div className="font-semibold">{product.nutrition.carbs}g</div>
-            <div className="text-gray-600">Carbs</div>
-          </div>
-        </div>
+        )}
 
         <div className="flex space-x-2">
           <button
@@ -104,7 +113,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <span>Add to Cart</span>
           </button>
           <button
-            onClick={handleAddToCart}
+            onClick={() => window.open(product.walmartUrl, '_blank')}
             className="p-3 border-2 border-walmart-blue text-walmart-blue rounded-lg hover:bg-walmart-blue hover:text-white transition-colors"
           >
             <ExternalLink className="w-4 h-4" />

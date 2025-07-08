@@ -3,21 +3,26 @@ import Header from './components/Header';
 import Questionnaire from './components/Questionnaire';
 import LoadingSpinner from './components/LoadingSpinner';
 import RecommendationResults from './components/RecommendationResults';
+import CartSummary from './components/CartSummary';
+import CalorieSuggestions from './components/CalorieSuggestions';
 import { generateRecommendations } from './services/openai';
 import { UserResponse, UserProfile, Recommendation } from './types';
 import { cookingOils, rice, flours, sauces, peanutButter, cereals, plantMilks, yogurt, cannedBeans, snackBars, frozenVegetables, herbalTeas } from './data/gros';
 import electronics from './data/electonics';
 import skincare from './data/skincare';
-import CustomRecommendation from './components/CustomRecommendation';
-import { calculateBMR, getActivityFactor, getCalorieTarget } from './utils/calorie';
 
-type AppState = 'questionnaire' | 'loading' | 'results';
+import { calculateBMR, getActivityFactor, getCalorieTarget, Gender } from './utils/calorie';
+
+type AppState = 'questionnaire' | 'loading' | 'results' | 'cart';
+
 
 function App() {
   const [appState, setAppState] = useState<AppState>('questionnaire');
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [mode, setMode] = useState<string>('');
   const [showCustom, setShowCustom] = useState(false);
+  const [cart, setCart] = useState<any[]>([]);
+  const [calorieTarget, setCalorieTarget] = useState<number>(0);
 
   const handleQuestionnaireComplete = async (responses: UserResponse[], selectedMode: string) => {
     setAppState('loading');
@@ -29,11 +34,14 @@ function App() {
     if (selectedMode === '🥗 Healthcare Grocery') {
       // Extract user data from responses
       const age = Number(responses.find(r => r.questionId === 'age')?.answer || 0);
-      const gender = (responses.find(r => r.questionId === 'gender')?.answer || '').toLowerCase();
+      const genderRaw = responses.find(r => r.questionId === 'gender')?.answer || '';
+      const gender = Array.isArray(genderRaw) ? genderRaw[0].toLowerCase() : genderRaw.toLowerCase();
       const height = Number(responses.find(r => r.questionId === 'height')?.answer || 0);
       const weight = Number(responses.find(r => r.questionId === 'weight')?.answer || 0);
-      const activityLevelRaw = (responses.find(r => r.questionId === 'activity-level')?.answer || '').toLowerCase();
-      const goalRaw = (responses.find(r => r.questionId === 'goal')?.answer || '').toLowerCase();
+      const activityLevelAns = responses.find(r => r.questionId === 'activity-level')?.answer || '';
+      const activityLevelRaw = Array.isArray(activityLevelAns) ? activityLevelAns[0].toLowerCase() : activityLevelAns.toLowerCase();
+      const goalAns = responses.find(r => r.questionId === 'goal')?.answer || '';
+      const goalRaw = Array.isArray(goalAns) ? goalAns[0].toLowerCase() : goalAns.toLowerCase();
       const dietaryPreference = responses.find(r => r.questionId === 'dietary-preference')?.answer as string || '';
       // Map UI values to util values
       const activityLevelMap: any = {
@@ -52,9 +60,11 @@ function App() {
       const goal = goalMap[goalRaw] || 'maintain';
 
       // Calculate BMR, TDEE, and calorie target
-      const bmr = calculateBMR({ gender, weight, height, age });
+      const genderValue: Gender = gender === 'male' ? 'male' : 'female';
+      const bmr = calculateBMR({ gender: genderValue, weight, height, age });
       const tdee = bmr * getActivityFactor(activityLevel);
       const calorieTarget = getCalorieTarget(tdee, goal);
+      setCalorieTarget(calorieTarget);
 
       // Build user profile for OpenAI
       const userProfile: UserProfile = {
@@ -110,11 +120,26 @@ function App() {
     setAppState('questionnaire');
     setRecommendations([]);
     setMode('');
+    setCart([]);
+    setCalorieTarget(0);
+  };
+
+  const handleAddToCart = (product: any) => {
+    setCart(prev => [...prev, product]);
+    setAppState('cart');
+  };
+
+  const handleRemoveFromCart = (id: string) => {
+    setCart(prev => prev.filter(p => p.id !== id));
+  };
+
+  const handleCartClick = () => {
+    setAppState('cart');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-walmart-blue-light to-white">
-      <Header />
+      <Header onCartClick={handleCartClick} cartCount={cart.length} />
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-end mb-4">
           <button
@@ -153,7 +178,28 @@ function App() {
                 <RecommendationResults
                   recommendations={recommendations}
                   onRestart={handleRestart}
+                  onAddToCart={handleAddToCart}
                 />
+              )}
+            {appState === 'cart' && (
+                <>
+                  <CartSummary cart={cart} calorieTarget={calorieTarget} onRemove={handleRemoveFromCart} />
+                  <CalorieSuggestions cart={cart} calorieTarget={calorieTarget} />
+                  <div className="flex justify-center gap-4 mt-8">
+                    <button
+                      className="bg-walmart-blue text-white px-6 py-3 rounded-lg hover:bg-walmart-blue-dark"
+                      onClick={handleRestart}
+                    >
+                      Start Over
+                    </button>
+                    <button
+                      className="bg-gray-200 text-walmart-blue px-6 py-3 rounded-lg hover:bg-gray-300"
+                      onClick={() => setAppState('results')}
+                    >
+                      Back to Recommendations
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           </>

@@ -6,11 +6,13 @@ import ProductCard from './ProductCard';
 interface RecommendationResultsProps {
   recommendations: Recommendation[];
   onRestart: () => void;
+  onAddToCart?: (product: any) => void;
 }
 
 const RecommendationResults: React.FC<RecommendationResultsProps> = ({ 
   recommendations, 
-  onRestart 
+  onRestart,
+  onAddToCart
 }) => {
   return (
     <div className="animate-fade-in">
@@ -46,6 +48,7 @@ const RecommendationResults: React.FC<RecommendationResultsProps> = ({
                 reason={rec.reason}
                 nutritionalMatch={rec.nutritionalMatch}
                 rank={index + 1}
+                onAddToCart={onAddToCart}
               />
             ))}
           </div>

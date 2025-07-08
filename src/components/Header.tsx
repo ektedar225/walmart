@@ -1,7 +1,12 @@
 import React from 'react';
 import { ShoppingCart, Heart } from 'lucide-react';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onCartClick: () => void;
+  cartCount: number;
+}
+
+const Header: React.FC<HeaderProps> = ({ onCartClick, cartCount }) => {
   return (
     <header className="bg-walmart-blue text-white shadow-lg">
       <div className="container mx-auto px-4 py-4">
@@ -16,7 +21,18 @@ const Header: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <ShoppingCart className="w-6 h-6 cursor-pointer hover:text-walmart-yellow transition-colors" />
+            <button
+              className="relative flex items-center justify-center bg-white rounded-full p-2 hover:bg-walmart-blue-light transition-colors"
+              onClick={onCartClick}
+              aria-label="View Cart"
+            >
+              <ShoppingCart className="w-6 h-6 text-walmart-blue" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-2 py-0.5 font-bold">
+                  {cartCount}
+                </span>
+              )}
+            </button>
           </div>
         </div>
       </div>
