@@ -99,48 +99,75 @@ const Questionnaire: React.FC<QuestionnaireProps> = ({ onComplete }) => {
         <h2 className="text-2xl font-bold text-gray-800 mb-6">{question.question}</h2>
         
         <div className="space-y-3">
-          {question.options.map((option, index) => (
-            <label
-              key={index}
-              className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-walmart-blue hover:bg-walmart-blue-light transition-all duration-200"
-            >
-              <input
-                type={question.type === 'single' ? 'radio' : 'checkbox'}
-                name={question.id}
-                value={option}
-                checked={
-                  question.type === 'single' 
-                    ? currentResponse === option
-                    : Array.isArray(currentResponse) && currentResponse.includes(option)
+          {/* Render text/number input for questions with no options (age, height, weight) */}
+          {question.options.length === 0 ? (
+            <input
+              type={question.id === 'age' || question.id === 'height' || question.id === 'weight' ? 'number' : 'text'}
+              min={question.id === 'age' ? 1 : question.id === 'height' ? 50 : question.id === 'weight' ? 20 : undefined}
+              max={question.id === 'age' ? 120 : question.id === 'height' ? 250 : question.id === 'weight' ? 300 : undefined}
+              step={question.id === 'height' || question.id === 'weight' ? 'any' : undefined}
+              className="w-full border rounded p-3 text-lg"
+              value={currentResponse || ''}
+              onChange={e => {
+                try {
+                  handleAnswer(e.target.value);
+                } catch (err) {
+                  // Silently catch errors, do not show on frontend
+                  // Optionally log to console for debugging
+                  // console.error('Input error:', err);
                 }
-                onChange={(e) => {
-                  if (question.type === 'single') {
-                    handleAnswer(option);
-                  } else {
-                    const currentArray = Array.isArray(currentResponse) ? currentResponse : [];
-                    if (e.target.checked) {
-                      handleAnswer([...currentArray, option]);
-                    } else {
-                      handleAnswer(currentArray.filter(item => item !== option));
-                    }
+              }}
+              placeholder={
+                question.id === 'age' ? 'Enter your age in years' :
+                question.id === 'height' ? 'Enter your height in cm' :
+                question.id === 'weight' ? 'Enter your weight in kg' :
+                ''
+              }
+            />
+          ) : (
+            question.options.map((option, index) => (
+              <label
+                key={index}
+                className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-walmart-blue hover:bg-walmart-blue-light transition-all duration-200"
+              >
+                <input
+                  type={question.type === 'single' ? 'radio' : 'checkbox'}
+                  name={question.id}
+                  value={option}
+                  checked={
+                    question.type === 'single' 
+                      ? currentResponse === option
+                      : Array.isArray(currentResponse) && currentResponse.includes(option)
                   }
-                }}
-                className="sr-only"
-              />
-              <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
-                (question.type === 'single' && currentResponse === option) ||
-                (question.type === 'multiple' && Array.isArray(currentResponse) && currentResponse.includes(option))
-                  ? 'bg-walmart-blue border-walmart-blue'
-                  : 'border-gray-300'
-              }`}>
-                {((question.type === 'single' && currentResponse === option) ||
-                  (question.type === 'multiple' && Array.isArray(currentResponse) && currentResponse.includes(option))) && (
-                  <Check className="w-3 h-3 text-white" />
-                )}
-              </div>
-              <span className="text-gray-700 font-medium">{option}</span>
-            </label>
-          ))}
+                  onChange={(e) => {
+                    if (question.type === 'single') {
+                      handleAnswer(option);
+                    } else {
+                      const currentArray = Array.isArray(currentResponse) ? currentResponse : [];
+                      if (e.target.checked) {
+                        handleAnswer([...currentArray, option]);
+                      } else {
+                        handleAnswer(currentArray.filter(item => item !== option));
+                      }
+                    }
+                  }}
+                  className="sr-only"
+                />
+                <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
+                  (question.type === 'single' && currentResponse === option) ||
+                  (question.type === 'multiple' && Array.isArray(currentResponse) && currentResponse.includes(option))
+                    ? 'bg-walmart-blue border-walmart-blue'
+                    : 'border-gray-300'
+                }`}>
+                  {((question.type === 'single' && currentResponse === option) ||
+                    (question.type === 'multiple' && Array.isArray(currentResponse) && currentResponse.includes(option))) && (
+                    <Check className="w-3 h-3 text-white" />
+                  )}
+                </div>
+                <span className="text-gray-700 font-medium">{option}</span>
+              </label>
+            ))
+          )}
         </div>
       </div>
 

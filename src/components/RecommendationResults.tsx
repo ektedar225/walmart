@@ -21,7 +21,7 @@ const RecommendationResults: React.FC<RecommendationResultsProps> = ({
         </div>
         <p className="text-gray-600 max-w-2xl mx-auto">
           Based on your health goals and preferences, we've found {recommendations.length} products 
-          that are perfect for you. Each recommendation is scored and explained by our AI.
+          that are perfect for you. Each recommendation is scored and explained by our healthguide.
         </p>
       </div>
 

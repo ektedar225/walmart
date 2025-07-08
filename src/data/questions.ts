@@ -82,10 +82,40 @@ export const skincareQuestions: Question[] = [
 
 export const groceryQuestions: Question[] = [
   {
-    id: 'health-goal',
-    question: 'What is your primary health goal?',
+    id: 'age',
+    question: 'What is your age?',
     type: 'single',
-    options: ['Weight Loss', 'Weight Gain', 'Muscle Building', 'Sugar Control', 'General Wellness']
+    options: [] // Will be handled as a free text/number input in the UI
+  },
+  {
+    id: 'gender',
+    question: 'What is your gender?',
+    type: 'single',
+    options: ['Male', 'Female']
+  },
+  {
+    id: 'height',
+    question: 'What is your height (in cm)?',
+    type: 'single',
+    options: [] // Will be handled as a free text/number input in the UI
+  },
+  {
+    id: 'weight',
+    question: 'What is your weight (in kg)?',
+    type: 'single',
+    options: [] // Will be handled as a free text/number input in the UI
+  },
+  {
+    id: 'activity-level',
+    question: 'What is your physical activity level?',
+    type: 'single',
+    options: ['Sedentary', 'Light', 'Moderate', 'Active', 'Very Active']
+  },
+  {
+    id: 'goal',
+    question: 'What is your goal?',
+    type: 'single',
+    options: ['Maintain Weight', 'Lose Weight', 'Gain Weight']
   },
   {
     id: 'dietary-preference',

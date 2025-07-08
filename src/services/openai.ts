@@ -12,6 +12,8 @@ export async function generateRecommendations(
   products: Product[]
 ): Promise<Recommendation[]> {
   try {
+    // Defensive: ensure products is always an array
+    const safeProducts = Array.isArray(products) ? products : [];
     const prompt = `
       Based on the user profile below, analyze and rank the following products by their suitability for this user's health goals. 
       Provide a detailed nutritional analysis and explanation for each recommendation.
@@ -24,7 +26,7 @@ export async function generateRecommendations(
       - Activity Level: ${userProfile.activityLevel}
 
       Products to analyze:
-      ${products.map(p => `
+      ${safeProducts.map(p => `
         ${p.name} by ${p.brand}:
         - Calories: ${p.nutrition?.calories ?? 'N/A'}
         - Protein: ${p.nutrition?.protein ?? 'N/A'}g
@@ -60,14 +62,20 @@ export async function generateRecommendations(
       max_tokens: 2000,
     });
 
-    const content = response.choices[0].message.content;
+    let content = response.choices[0].message.content;
     if (!content) throw new Error('No response from AI');
+
+    // Remove Markdown code block markers if present
+    content = content.trim();
+    if (content.startsWith('```')) {
+      content = content.replace(/^```[a-zA-Z]*\n?|```$/g, '').trim();
+    }
 
     const aiResponse = JSON.parse(content);
     const recommendations: Recommendation[] = [];
 
     for (const rec of aiResponse.recommendations) {
-      const product = products.find(p => p.name === rec.productName);
+      const product = safeProducts.find(p => p.name === rec.productName);
       if (product) {
         recommendations.push({
           product,
@@ -93,7 +101,9 @@ function generateFallbackRecommendations(
 ): Recommendation[] {
   const recommendations: Recommendation[] = [];
   
-  products.forEach(product => {
+  // Defensive: ensure products is always an array
+  const safeProducts = Array.isArray(products) ? products : [];
+  safeProducts.forEach(product => {
     let score = 5;
     let reason = 'Good nutritional balance';
     let nutritionalMatch = 'Suitable for general health';

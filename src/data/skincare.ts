@@ -360,3 +360,5 @@ const skincare = [
     "reviews": 10300
   }
 ];
+
+export default skincare;
